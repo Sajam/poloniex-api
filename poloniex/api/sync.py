@@ -13,12 +13,29 @@ class PublicApi(BasePublicApi):
     url = "https://poloniex.com/public?"
 
     def api_call(self, *args, **kwargs):
-        response = requests.get(self.url, *args, **kwargs)
+        try:
+            response = requests.get(self.url, timeout=120, *args, **kwargs)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise PoloniexError('Got {} when calling {}.'.format(response.status_code, self.url))
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise PoloniexError(
+                    'Poloniex request error - got {} when calling {} (body: {}). Args: {}, kwargs: {}.'.format(
+                        response.status_code,
+                        self.url,
+                        response.text,
+                        args,
+                        kwargs,
+                    )
+                )
+        except Exception as e:
+            raise PoloniexError(
+                'Poloniex request error: {}. Data - args: {}, kwargs: {}.'.format(
+                    e,
+                    args,
+                    kwargs
+                )
+            )
 
     @command_operator
     def returnTicker(self):
@@ -83,11 +100,29 @@ class TradingApi(BaseTradingApi):
         kwargs['data'] = data
         kwargs['headers'] = headers
 
-        response = requests.post(self.url, *args, **kwargs)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise PoloniexError('Got {} when calling {}.'.format(response.status_code, self.url))
+        try:
+            response = requests.post(self.url, timeout=120, *args, **kwargs)
+
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise PoloniexError(
+                    'Poloniex request error - got {} when calling {} (body: {}). Args: {}, kwargs: {}.'.format(
+                        response.status_code,
+                        self.url,
+                        response.text,
+                        args,
+                        kwargs,
+                    )
+                )
+        except Exception as e:
+            raise PoloniexError(
+                'Poloniex request error: {}. Data - args: {}, kwargs: {}.'.format(
+                    e,
+                    args,
+                    kwargs
+                )
+            )
 
     @command_operator
     def returnBalances(self):
